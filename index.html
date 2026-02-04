@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>❤️</title>
+
+<style>
+  :root{
+    --glass: rgba(255,255,255,.20);
+    --glass2: rgba(255,255,255,.10);
+    --border: rgba(255,255,255,.30);
+    --shadow: rgba(0,0,0,.22);
+
+    --sat: env(safe-area-inset-top, 0px);
+    --sar: env(safe-area-inset-right, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+  }
+
+  *{ box-sizing:border-box; }
+  html, body { height:100%; }
+  body{
+    margin:0;
+    overflow:hidden;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color:#fff;
+  }
+
+  body.bg-page1{
+    background:
+      radial-gradient(900px 520px at 25% 25%, rgba(255,255,255,.16), transparent 62%),
+      radial-gradient(820px 520px at 75% 65%, rgba(255,255,255,.10), transparent 62%),
+      linear-gradient(135deg, #ff3b6a 0%, #ff6b8b 45%, #b31348 100%);
+    position:relative;
+  }
+
+  body.bg-page1::before{
+    content:"";
+    position:absolute; inset:-25%;
+    background:
+      radial-gradient(560px 420px at 30% 30%, rgba(255,255,255,.10), transparent 55%),
+      radial-gradient(520px 380px at 70% 55%, rgba(255,255,255,.08), transparent 55%),
+      radial-gradient(640px 480px at 55% 20%, rgba(255,255,255,.07), transparent 55%);
+    filter: blur(18px);
+    animation: drift 10s ease-in-out infinite alternate;
+    pointer-events:none;
+  }
+
+  body.bg-page2{
+    background:
+      radial-gradient(900px 520px at 25% 25%, rgba(255,255,255,.14), transparent 62%),
+      radial-gradient(820px 520px at 75% 65%, rgba(255,255,255,.10), transparent 62%),
+      linear-gradient(135deg, #ff2d55 0%, #ff5ea8 45%, #6a2cff 100%);
+  }
+
+  @keyframes drift{
+    from { transform: translate(-1.5%, -1%) scale(1.02); }
+    to   { transform: translate( 1.5%,  1.5%) scale(1.05); }
+  }
+
+  .center{
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 18px;
+    position:relative;
+    z-index: 3;
+  }
+
+  .card{
+    width:min(560px, 92vw);
+    background: linear-gradient(180deg, var(--glass), var(--glass2));
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 26px 22px;
+    box-shadow: 0 18px 60px var(--shadow);
+    backdrop-filter: blur(10px);
+    text-align:center;
+    position:relative;
+  }
+
+  h1{
+    margin:0 0 18px 0;
+    font-size: clamp(26px, 4.6vw, 40px);
+    line-height:1.1;
+    text-shadow: 0 10px 30px rgba(0,0,0,.28);
+  }
+
+  button{
+    min-width: 160px;
+    padding:14px 18px;
+    font-size:18px;
+    border:none;
+    border-radius:14px;
+    cursor:pointer;
+    color:#fff;
+    font-weight:800;
+    letter-spacing:.2px;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #yesBtn{
+    background: linear-gradient(135deg, #ff6b6b, #ff2d55);
+    box-shadow: 0 14px 30px rgba(0,0,0,.18);
+    position: relative;
+    right:20%;
+     /* DA nu se mișcă */
+    z-index: 2;
+  }
+
+  #noBtn{
+    background: linear-gradient(135deg, #6c757d, #495057);
+    box-shadow: 0 14px 30px rgba(0,0,0,.18);
+    position: absolute; /* NU se mișcă în interiorul cadrului */
+    left: 70%;
+    top: 50%;
+    transform: translate(-50%, -50%); /* START: perfect centrat (nu mai e la dreapta) */
+    z-index: 3;
+  }
+
+  /* ====== CADRUL DE MIȘCARE (poate fi mai mare fără să mărești textul) ====== */
+  .no-zone{
+    position: relative;
+    width: min(520px, 92vw); /* mai lat = mai mult spațiu de mișcare */
+    height: 220px;           /* mai înalt = mai mult spațiu de mișcare */
+    margin: 0 auto;
+  }
+
+  /* Textul rămâne separat (nu depinde de no-zone) */
+  .question{
+    margin: 0 0 14px 0;
+  }
+
+  /* butoane pe același rând */
+  .buttons{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 14px;
+  }
+
+  /* Canvas inimioare */
+  #heartCanvas{
+    position:fixed;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+  }
+
+  /* Canvas explozie */
+  #burstCanvas{
+    position:fixed;
+    inset:0;
+    z-index:6;
+    pointer-events:none;
+    display:none;
+  }
+
+  /* flash */
+  .flash{
+    position:fixed;
+    inset:0;
+    z-index:7;
+    pointer-events:none;
+    background: radial-gradient(circle at center, rgba(255,255,255,.55), transparent 60%);
+    opacity:0;
+  }
+  .flash.show{ animation: flash 520ms ease-out forwards; }
+  @keyframes flash{
+    0%{opacity:0}
+    25%{opacity:1}
+    100%{opacity:0}
+  }
+
+  /* flori animate */
+  .flowers{
+    position:absolute;
+    inset:-34px;
+    z-index:-1;
+    pointer-events:none;
+    display:none;
+  }
+  .flower{
+    position:absolute;
+    width:150px;
+    height:150px;
+    filter: drop-shadow(0 18px 25px rgba(0,0,0,.18));
+    opacity:0;
+    transform: translateY(34px) scale(.85);
+    animation: popIn .9s ease forwards;
+  }
+  @keyframes popIn{
+    0%   { opacity:0; transform: translateY(44px) scale(.78); }
+    60%  { opacity:1; transform: translateY(-4px) scale(1.03); }
+    100% { opacity:1; transform: translateY(0) scale(1); }
+  }
+  .flower svg{
+    width:100%;
+    height:100%;
+    transform-origin: 50% 80%;
+    animation: sway 2.8s ease-in-out infinite alternate;
+  }
+  @keyframes sway{
+    from { transform: rotate(-3deg) scale(1); }
+    to   { transform: rotate(4deg) scale(1.02); }
+  }
+  .petals{ transform-origin: 50% 50%; animation: bloom 2.4s ease-in-out infinite; }
+  @keyframes bloom{ 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+
+  /* felicitare */
+  .val-card{
+    margin: 4px auto 0;
+    width: min(420px, 86vw);
+    border-radius: 18px;
+    background: rgba(255,255,255,.92);
+    color:#1b1b1b;
+    padding: 18px 16px;
+    box-shadow: 0 18px 55px rgba(0,0,0,.18);
+  }
+  .val-title{
+    font-weight: 900;
+    letter-spacing: .5px;
+    margin: 0 0 10px 0;
+    font-size: 22px;
+  }
+  .val-illu{
+    width: 100%;
+    height: auto;
+    display:block;
+    margin: 8px auto 0;
+  }
+</style>
+</head>
+
+<body class="bg-page1">
+  <canvas id="heartCanvas"></canvas>
+  <canvas id="burstCanvas"></canvas>
+  <div class="flash" id="flash"></div>
+
+  <div class="center">
+    <div class="card" id="page1">
+      <h1 class="question">Te aleg pe tine. Accepti? ❤️</h1>
+
+      <!-- ZONA DE MIȘCARE (mai mare), fără să schimbi textul -->
+      <div class="no-zone" id="noZone">
+        <div class="buttons">
+          <button id="yesBtn">DA</button>
+          <button id="noBtn">NU</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="page2" style="display:none;">
+      <div class="flowers" id="flowers"></div>
+
+      <div class="val-card">
+        <div class="val-title">HAPPY VALENTINE'S DAY</div>
+        <svg class="val-illu" viewBox="0 0 520 320" aria-hidden="true">
+          <rect x="0" y="0" width="520" height="320" rx="16" fill="#ffd6e6"/>
+          <g fill="#ff2d55" opacity="0.85">
+            <path d="M80 70c0-10 8-18 18-18 6 0 11 3 14 8 3-5 8-8 14-8 10 0 18 8 18 18 0 21-32 36-32 36S80 91 80 70z"/>
+            <path d="M410 78c0-9 7-16 16-16 5 0 10 3 12 7 3-4 7-7 12-7 9 0 16 7 16 16 0 19-28 32-28 32s-28-13-28-32z"/>
+            <path d="M250 56c0-7 6-13 13-13 4 0 8 2 10 6 2-4 6-6 10-6 7 0 13 6 13 13 0 15-23 26-23 26s-23-10-23-26z"/>
+          </g>
+
+          <g transform="translate(140 160)">
+            <path d="M0 95c0-55 35-95 85-95s85 40 85 95v35H0z" fill="#fff" stroke="#1b1b1b" stroke-width="6" />
+            <circle cx="60" cy="55" r="6" fill="#1b1b1b"/>
+            <circle cx="110" cy="55" r="6" fill="#1b1b1b"/>
+            <path d="M70 74c10 10 20 10 30 0" fill="none" stroke="#1b1b1b" stroke-width="6" stroke-linecap="round"/>
+            <rect x="30" y="92" width="110" height="70" rx="12" fill="#fff" stroke="#1b1b1b" stroke-width="6"/>
+            <path d="M85 145c-20-12-32-24-32-38 0-10 8-18 18-18 6 0 11 3 14 8 3-5 8-8 14-8 10 0 18 8 18 18 0 14-12 26-32 38z" fill="#ff2d55"/>
+          </g>
+
+          <g transform="translate(300 160)">
+            <path d="M0 95c0-55 35-95 85-95s85 40 85 95v35H0z" fill="#fff" stroke="#1b1b1b" stroke-width="6" />
+            <circle cx="60" cy="55" r="6" fill="#1b1b1b"/>
+            <circle cx="110" cy="55" r="6" fill="#1b1b1b"/>
+            <path d="M70 74c10 10 20 10 30 0" fill="none" stroke="#1b1b1b" stroke-width="6" stroke-linecap="round"/>
+            <g transform="translate(120 28)">
+              <circle cx="0" cy="0" r="12" fill="#ff2d55"/>
+              <circle cx="-10" cy="0" r="8" fill="#fff"/>
+              <circle cx="10" cy="0" r="8" fill="#fff"/>
+              <circle cx="0" cy="-10" r="8" fill="#fff"/>
+              <circle cx="0" cy="10" r="8" fill="#fff"/>
+            </g>
+            <path d="M85 150c-20-12-32-24-32-38 0-10 8-18 18-18 6 0 11 3 14 8 3-5 8-8 14-8 10 0 18 8 18 18 0 14-12 26-32 38z"
+                  fill="none" stroke="#1b1b1b" stroke-width="6"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* =========================
+   1) BUTONUL NU: fuge doar în noZone
+   ========================= */
+const noBtn  = document.getElementById("noBtn");
+const yesBtn = document.getElementById("yesBtn");
+const noZone = document.getElementById("noZone");
+const page1  = document.getElementById("page1");
+const page2  = document.getElementById("page2");
+const body   = document.body;
+
+function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+/* START: pune NU exact în centru (fără offset dreapta) */
+function centerNoButton(){
+  noBtn.style.left = "70%";
+  noBtn.style.top  = "50%";
+  noBtn.style.transform = "translate(-50%, -50%)";
+}
+
+/* Mută NU random în interiorul zonei */
+function moveNoButton(){
+  if(page1.style.display === "none") return;
+
+  const zoneRect = noZone.getBoundingClientRect();
+  const btnRect  = noBtn.getBoundingClientRect();
+
+  const padding = 10;
+
+  const maxX = Math.max(0, zoneRect.width  - btnRect.width  - padding*2);
+  const maxY = Math.max(0, zoneRect.height - btnRect.height - padding*2);
+
+  const x = padding + Math.random() * maxX;
+  const y = padding + Math.random() * maxY;
+
+  noBtn.style.left = x + "px";
+  noBtn.style.top  = y + "px";
+  noBtn.style.transform = "none";
+}
+
+/* inițializare poziție */
+centerNoButton();
+
+noBtn.addEventListener("mouseenter", moveNoButton);
+noBtn.addEventListener("touchstart", (e)=>{ e.preventDefault(); moveNoButton(); }, {passive:false});
+noBtn.addEventListener("click", (e)=>{ e.preventDefault(); moveNoButton(); });
+
+/* =========================
+   2) Inimioare floating
+   ========================= */
+const heartCanvas = document.getElementById("heartCanvas");
+const hctx = heartCanvas.getContext("2d");
+let HW=0, HH=0;
+
+function resizeHearts(){
+  HW = heartCanvas.width  = window.innerWidth;
+  HH = heartCanvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resizeHearts);
+resizeHearts();
+
+const pointer = { x: HW/2, y: HH/2, active:false };
+window.addEventListener("mousemove", (e)=>{ pointer.x=e.clientX; pointer.y=e.clientY; pointer.active=true; });
+window.addEventListener("touchmove", (e)=>{
+  if(!e.touches || !e.touches[0]) return;
+  pointer.x=e.touches[0].clientX; pointer.y=e.touches[0].clientY; pointer.active=true;
+}, {passive:true});
+window.addEventListener("touchstart", (e)=>{
+  if(!e.touches || !e.touches[0]) return;
+  pointer.x=e.touches[0].clientX; pointer.y=e.touches[0].clientY; pointer.active=true;
+}, {passive:true});
+window.addEventListener("mouseleave", ()=> pointer.active=false);
+
+function rand(min,max){ return min + Math.random()*(max-min); }
+
+function drawHeart(ctx, x,y,s,rot,alpha, color="rgba(255,45,85,1)"){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(rot);
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+
+  const k = s/18;
+  ctx.beginPath();
+  ctx.moveTo(0, 6*k);
+  ctx.bezierCurveTo(0, 0, -10*k, 0, -10*k, 6*k);
+  ctx.bezierCurveTo(-10*k, 12*k, 0, 14*k, 0, 18*k);
+  ctx.bezierCurveTo(0, 14*k, 10*k, 12*k, 10*k, 6*k);
+  ctx.bezierCurveTo(10*k, 0, 0, 0, 0, 6*k);
+  ctx.closePath();
+
+  ctx.shadowColor = "rgba(255,255,255,.22)";
+  ctx.shadowBlur = 10;
+  ctx.fill();
+  ctx.restore();
+}
+
+let hearts = [];
+function makeHeart(){
+  const size = rand(10, 34);
+  return {
+    x: rand(0, HW),
+    y: HH + rand(0, HH*0.8),
+    size,
+    vy: rand(0.45, 1.7) * (36/size),
+    vx: rand(-0.30, 0.30),
+    rot: rand(0, Math.PI*2),
+    vr: rand(-0.02, 0.02),
+    wobble: rand(0.8, 2.8),
+    phase: rand(0, Math.PI*2),
+    alpha: rand(0.18, 0.60)
+  };
+}
+
+function heartsTarget(){
+  const denom = body.classList.contains("bg-page2") ? 6200 : 11000;
+  const base = Math.floor(HW*HH / denom);
+  return clamp(base, 45, body.classList.contains("bg-page2") ? 240 : 130);
+}
+
+function stepHearts(){
+  hctx.clearRect(0,0,HW,HH);
+
+  const target = heartsTarget();
+  while(hearts.length < target) hearts.push(makeHeart());
+  while(hearts.length > target) hearts.pop();
+
+  const repelRadius = body.classList.contains("bg-page2") ? 170 : 130;
+
+  for(const h of hearts){
+    h.phase += 0.02;
+    h.rot += h.vr;
+
+    const wob = Math.sin(h.phase) * h.wobble;
+
+    if(pointer.active){
+      const dx = h.x - pointer.x;
+      const dy = h.y - pointer.y;
+      const d2 = dx*dx + dy*dy;
+      const r = repelRadius;
+      if(d2 < r*r){
+        const d = Math.max(1, Math.sqrt(d2));
+        const force = (1 - d/r) * (body.classList.contains("bg-page2") ? 2.0 : 1.2);
+        h.x += (dx/d) * force * 2.5;
+        h.y += (dy/d) * force * 2.5;
+        h.x += (-dy/d) * force * 0.8;
+      }
+    }
+
+    h.y -= h.vy;
+    h.x += h.vx + wob*0.03;
+
+    if(h.x < -60) h.x = HW + 60;
+    if(h.x > HW + 60) h.x = -60;
+
+    if(h.y < -80){
+      h.x = rand(0, HW);
+      h.y = HH + rand(20, HH*0.6);
+      h.size = rand(10, 34);
+      h.vy = rand(0.45, 1.7) * (36/h.size);
+      h.alpha = rand(body.classList.contains("bg-page2") ? 0.28 : 0.18, body.classList.contains("bg-page2") ? 0.78 : 0.60);
+    }
+
+    drawHeart(hctx, h.x, h.y, h.size, h.rot, h.alpha);
+  }
+
+  requestAnimationFrame(stepHearts);
+}
+stepHearts();
+
+/* =========================
+   3) Explozie + flori la DA + ascundem NU
+   ========================= */
+const burstCanvas = document.getElementById("burstCanvas");
+const bctx = burstCanvas.getContext("2d");
+const flash = document.getElementById("flash");
+const flowersWrap = document.getElementById("flowers");
+
+let BW=0, BH=0;
+function resizeBurst(){
+  BW = burstCanvas.width  = window.innerWidth;
+  BH = burstCanvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resizeBurst);
+resizeBurst();
+
+function spawnFlowers(){
+  flowersWrap.innerHTML = "";
+  flowersWrap.style.display = "block";
+
+  const placements = [
+    { left: "-44px", top:  "-30px", delay: "0ms",  rot: -6 },
+    { right:"-44px", top:  "-26px", delay: "80ms", rot:  7 },
+    { left: "-62px", bottom:"-46px", delay: "140ms",rot:  4 },
+    { right:"-62px", bottom:"-48px", delay: "220ms",rot: -5 },
+    { left: "34px",  bottom:"-62px", delay: "280ms",rot:  6 },
+    { right:"34px",  bottom:"-64px", delay: "340ms",rot: -7 },
+  ];
+
+  for(const p of placements){
+    const d = document.createElement("div");
+    d.className = "flower";
+    d.style.animationDelay = p.delay;
+    d.style.transform = `translateY(34px) scale(.85) rotate(${p.rot}deg)`;
+    if(p.left) d.style.left = p.left;
+    if(p.right) d.style.right = p.right;
+    if(p.top) d.style.top = p.top;
+    if(p.bottom) d.style.bottom = p.bottom;
+
+    d.innerHTML = `
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <path d="M110 190 C 120 150, 110 120, 105 98" fill="none" stroke="rgba(30,130,80,.85)" stroke-width="10" stroke-linecap="round"/>
+        <path d="M120 140 C 150 130, 155 155, 128 160" fill="rgba(60,200,120,.55)"/>
+        <g class="petals">
+          <g transform="translate(100 90)">
+            ${Array.from({length:10}).map((_,i)=>`
+              <ellipse cx="0" cy="-34" rx="18" ry="34" transform="rotate(${i*36})" fill="rgba(255,255,255,.86)"/>
+              <ellipse cx="0" cy="-34" rx="14" ry="28" transform="rotate(${i*36})" fill="rgba(255,45,85,.22)"/>
+            `).join("")}
+          </g>
+          <circle cx="100" cy="90" r="16" fill="rgba(255,45,85,.95)"/>
+          <circle cx="100" cy="90" r="7"  fill="rgba(255,255,255,.85)"/>
+        </g>
+      </svg>
+    `;
+    flowersWrap.appendChild(d);
+  }
+}
+
+function burstAt(x, y){
+  burstCanvas.style.display = "block";
+  const particles = [];
+  const count = 190;
+
+  for(let i=0;i<count;i++){
+    const a = Math.random() * Math.PI * 2;
+    const sp = rand(2.2, 8.6);
+    const kind = (Math.random() < 0.58) ? "heart" : "petal";
+
+    particles.push({
+      x, y,
+      vx: Math.cos(a)*sp,
+      vy: Math.sin(a)*sp - rand(1.0, 3.0),
+      g: rand(0.06, 0.12),
+      life: rand(48, 84),
+      size: kind === "heart" ? rand(10, 22) : rand(6, 14),
+      rot: rand(0, Math.PI*2),
+      vr: rand(-0.22, 0.22),
+      alpha: 1,
+      kind
+    });
+  }
+
+  let frame = 0;
+  function draw(){
+    frame++;
+    bctx.clearRect(0,0,BW,BH);
+
+    for(const p of particles){
+      p.vy += p.g;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+      p.life -= 1;
+      p.alpha = Math.max(0, p.life / 84);
+      if(p.life <= 0) continue;
+
+      bctx.save();
+      bctx.translate(p.x, p.y);
+      bctx.rotate(p.rot);
+      bctx.globalAlpha = p.alpha;
+
+      if(p.kind === "heart"){
+        drawHeart(bctx, 0, 0, p.size, 0, 1, "rgba(255,255,255,.92)");
+        drawHeart(bctx, 0, 0, p.size-2, 0, 0.85, "rgba(255,45,85,.9)");
+      }else{
+        bctx.fillStyle = "rgba(255,255,255,.90)";
+        bctx.beginPath();
+        bctx.ellipse(0, 0, p.size*0.55, p.size, 0, 0, Math.PI*2);
+        bctx.fill();
+
+        bctx.fillStyle = "rgba(255,45,85,.25)";
+        bctx.beginPath();
+        bctx.ellipse(0, 0, p.size*0.38, p.size*0.8, 0, 0, Math.PI*2);
+        bctx.fill();
+      }
+      bctx.restore();
+    }
+
+    if(frame < 92) requestAnimationFrame(draw);
+    else{
+      burstCanvas.style.display = "none";
+      bctx.clearRect(0,0,BW,BH);
+    }
+  }
+  draw();
+}
+
+function hideNoButtonCompletely(){
+  noBtn.style.display = "none";
+  noBtn.replaceWith(noBtn.cloneNode(true));
+}
+
+yesBtn.addEventListener("click", () => {
+  const r = yesBtn.getBoundingClientRect();
+  const cx = r.left + r.width/2;
+  const cy = r.top + r.height/2;
+
+  flash.classList.remove("show");
+  void flash.offsetWidth;
+  flash.classList.add("show");
+  burstAt(cx, cy);
+
+  hideNoButtonCompletely();
+
+  page1.style.display = "none";
+  page2.style.display = "block";
+  body.classList.remove("bg-page1");
+  body.classList.add("bg-page2");
+
+  spawnFlowers();
+});
+</script>
+</body>
+</html>
